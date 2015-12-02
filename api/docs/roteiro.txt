@@ -1,0 +1,54 @@
+CRIAR GIST COM AS COLAS
+
+Instalar o silex
+
+Volta pra apresentação e fala das rotas
+
+Criar rotas básicas de get e get dinâmico -> cola1
+
+Volta pra apresentação e explica a autenticação
+
+Criar função de login -> cola2
+
+Criar verificacao de token dentro da funcao de login -> cola3
+
+Retornar token de usuario na funcao de login -> cola4
+ - Criar pasta src/app
+ - Criar generators
+ - Adicionar namespace no composer
+ - Composer dump-autoload
+ - Retornar token do usuario
+
+Proteger a rota beer/{id} -> cola5
+ - Copiar e colar código eternamente para verificar tokens
+
+Volta pra apresentação e explica sobre os miidlewares
+
+Codifica o middleware after para retornar os tokens -> cola6
+
+Codifica o middleware before para verificar os tokens -> cola7
+
+Codifica para separar a validacao dos tokens -> cola8
+ - Criar classe do package guardian
+ - Implementar validacao dentro da classe
+
+--------------------------------------------------------------
+Apresenta JSON WEB TOKEN
+
+Lets code. Copia projeto
+
+Altera o composer
+
+Adiciona a classe que gera o token
+
+Altera a funcao de post para gerar o novo token
+
+Altera o middleware after
+
+Altera o middleware before -> cola9
+
+Criar funcao de validacao do jwt token
+
+PARTE PRO SESSIONS
+--------------------------------------------------------------
+SESSIONS
