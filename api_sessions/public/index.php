@@ -67,11 +67,7 @@ $app->get('/logout', function(Request $request) use ($app) {
 $app->before(function(Request $request, Application $app) {
     $pathInfo = $request->getPathInfo();
 
-    $guard = new Guardian();
-
     if($pathInfo != '/auth') {
-        $clientToken = $request->headers->get('ClientToken');
-
         if(!isset($_SESSION['nome'])) {
             return new JsonResponse('Bad Request', 400);
         }
@@ -79,10 +75,6 @@ $app->before(function(Request $request, Application $app) {
 });
 
 $app->after(function(Request $request, Response $response, Application $app) {
-    if(isset($app['ClientToken'])) {
-        $response->headers->set('ClientToken', $app['ClientToken']);
-    }
-
     $response->headers->set('Access-Control-Allow-Origin', '*');
     $response->headers->set('Access-Control-Expose-Headers', 'ClientToken');
     $response->headers->set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, ClientToken');

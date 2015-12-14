@@ -5,9 +5,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-use App\YSNP\Guardian;
-
 define("APP_ROOT", dirname(__DIR__));
+
 chdir(APP_ROOT);
 
 require "vendor/autoload.php";
@@ -15,17 +14,29 @@ require "vendor/autoload.php";
 $app = new Application();
 $app['debug'] = true;
 
-$app->get('/', function() {
-    return 'Hello world!';
-});
-
 $beers = [
     ['name' => 'Heineken', 'stars' => '5'],
     ['name' => 'Antarctica', 'stars' => '4'],
     ['name' => 'Cristal', 'stars' => '1']
 ];
 
-$app->get('/beer', function() use ($beers) {
+$appToken = [
+  'c3de5b07ce5e26a436a90b7b9d756f8865bb1464f781fbcec964ca5f1d53953d'
+];
+
+$clientToken = [
+  '89e0a65933566fa6c14b6cd8f02df5f150764b79e8a9da45f6f153b0b52c93eb'
+];
+
+$openRoutes = [
+  '/auth'
+];
+
+$app->get('/', function() {
+    return 'Hello world!';
+});
+
+$app->get('/beer', function(Request $request) use ($beers) {
     return new JsonResponse($beers, 200);
 });
 
@@ -39,8 +50,8 @@ $app->get('/beer/{id}', function (Request $request, $id) use ($beers) {
     return new JsonResponse('Beer not found', 404);
 });
 
-$app->post('/auth', function(Request $request) use ($app) {
-    if($request->get('usuario') == 'admin' && $request->get('senha') == 'admin') {
+$app->post('/auth', function(Request $request) use ($app, $appToken) {
+    if ($request->get('usuario') == 'admin' && $request->get('senha') == 'admin') {
         $clientToken = \App\Generators\Sha2TokenGenerator::generate();
 
         $app['ClientToken'] = $clientToken;
@@ -51,49 +62,41 @@ $app->post('/auth', function(Request $request) use ($app) {
     return new JsonResponse('Invalid username or password', 404);
 });
 
-$app->before(function(Request $request, Application $app) {
-    $pathInfo = $request->getPathInfo();
 
-    $appToken = $request->headers->get('AppToken');
+$app->before(function(Request $request, Application $app) use ($appToken) {
+  $token = $request->headers->get('AppToken');
 
-    $isValidToken = false;
+  if (!in_array($token, $appToken)) {
+      return new JsonResponse('Access denied', 400);
+  }
+});
 
-    $guard = new Guardian();
+$app->before(function(Request $request, Application $app) use ($clientToken, $openRoutes) {
 
-    if($pathInfo == '/auth') {
-        if($guard->validateAppToken($appToken)){
-            $app['AppToken'] = $appToken;
+  $route = $request->getPathInfo();
 
-            $isValidToken = true;
-        }
-    } else {
-        $clientToken = $request->headers->get('ClientToken');
+  if(in_array($route, $openRoutes)) {
+    return;
+  }
 
-        if($guard->validateAppAndClientToken($appToken, $clientToken)){
-            $app['ClientToken'] = $clientToken;
+  $token = $request->headers->get('ClientToken');
 
-            $isValidToken = true;
-        }
-    }
+  if (!in_array($token, $clientToken)) {
+      return new JsonResponse('Access denied', 400);
+  }
 
-    if (!$isValidToken) {
-        return new JsonResponse('Bad Request', 400);
-    }
+  $app['ClientToken'] = $token;
+
 });
 
 $app->after(function(Request $request, Response $response, Application $app) {
-    if(isset($app['AppToken'])) {
-        $response->headers->set('AppToken', $app['AppToken']);
-    }
-    if(isset($app['ClientToken'])) {
-        $response->headers->set('ClientToken', $app['ClientToken']);
-    }
 
-    $response->headers->set('Access-Control-Allow-Origin', '*');
-    $response->headers->set('Access-Control-Expose-Headers', 'AppToken');
-    $response->headers->set('Access-Control-Expose-Headers', 'ClientToken');
-    $response->headers->set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, ClientToken, AppToken');
+  $response->headers->set('ClientToken', $app['ClientToken']);
+
+  $response->headers->set('Access-Control-Allow-Origin', '*');
+  $response->headers->set('Access-Control-Expose-Headers', 'AppToken');
+  $response->headers->set('Access-Control-Expose-Headers', 'ClientToken');
+  $response->headers->set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, ClientToken, AppToken');
+
 });
-
-
 $app->run();

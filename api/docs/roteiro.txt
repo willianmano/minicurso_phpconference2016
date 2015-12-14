@@ -52,3 +52,9 @@ Criar funcao de validacao do jwt token
 PARTE PRO SESSIONS
 --------------------------------------------------------------
 SESSIONS
+
+Apresentar sobre sessions
+
+Criar sessao no login
+
+Alterar middleware before para verificar sessao
